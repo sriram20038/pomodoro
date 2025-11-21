@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GATE 2026 Study Tracker - Image Reveal Pomodoro</title>
+
+  <style>
+    body {
+      font-family: Poppins, Arial;
+      padding: 20px;
+      background: linear-gradient(135deg, #ffd8d8, #fff3c4, #d4f9ff);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #imageContainer {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    #mainCanvas {
+      cursor: pointer;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      max-width: 100%;
+      background: #eee;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    #generateBtn { background: #6a5af9; }
+    #resetBtn { background: #ff9800; }
+    #downloadBtn { background: #43c96f; }
+
+    #progress {
+      font-weight: bold;
+      font-size: 20px;
+      margin-top: 15px;
+      text-align: center;
+      color: #333;
+    }
+
+    .info-panel {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin: 20px auto;
+      max-width: 600px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .info-highlight {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    #resetAllBtn { background: #f44336; }
+
+    .study-stats {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>🎯 GATE 2026 Study Tracker</h2>
+
+  <div class="info-panel">
+    <div class="info-row">
+      <span>📅 Today's Date:</span>
+      <span id="todayDate"></span>
+    </div>
+    <div class="info-row">
+      <span>🎯 GATE 2026 Exam:</span>
+      <span>February 8, 2026</span>
+    </div>
+    <div class="info-row">
+      <span>⏰ Days Remaining:</span>
+      <span id="daysLeft" class="info-highlight"></span>
+    </div>
+    
+    <div class="study-stats">
+      <div class="info-row">
+        <span>📚 Total Study Time:</span>
+        <span id="totalStudyTime" class="info-highlight">0 hours 0 minutes</span>
+      </div>
+      <div class="info-row">
+        <span>🍅 Sessions Completed:</span>
+        <span id="sessionsCompleted" class="info-highlight">0</span>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="imageInput" accept="image/*" /><br><br>
+
+  <label>Number of Parts (1–50):</label>
+  <input type="number" id="parts" min="1" max="50" value="10" />
+
+  <button id="generateBtn">Generate Study Image</button>
+
+  <div id="imageContainer">
+    <canvas id="mainCanvas"></canvas>
+  </div>
+
+  <p id="progress">Progress: 0%</p>
+
+  <button id="resetBtn">Reset Current Image</button>
+  <button id="resetAllBtn">Reset All Stats</button>
+  <button id="downloadBtn">Download Final Image</button>
+
+  <canvas id="finalCanvas" style="display:none;"></canvas>
+
+<script>
+(function () {
+
+  let originalImg = null;
+  let revealed = 0;
+  let partsCount = 10;
+  let revealedParts = [];
+  let displayScale = 1;
+  let displayWidth = 0;
+  let displayHeight = 0;
+  let totalStudyMinutes = 0;
+  let sessionsCompleted = 0;
+
+  const imageInput = document.getElementById("imageInput");
+  const partsInput = document.getElementById("parts");
+  const generateBtn = document.getElementById("generateBtn");
+  const mainCanvas = document.getElementById("mainCanvas");
+  const progressEl = document.getElementById("progress");
+  const resetBtn = document.getElementById("resetBtn");
+  const resetAllBtn = document.getElementById("resetAllBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const finalCanvas = document.getElementById("finalCanvas");
+  const todayDateEl = document.getElementById("todayDate");
+  const daysLeftEl = document.getElementById("daysLeft");
+  const totalStudyTimeEl = document.getElementById("totalStudyTime");
+  const sessionsCompletedEl = document.getElementById("sessionsCompleted");
+
+  // Initialize date and countdown
+  function updateDateInfo() {
+    const today = new Date();
+    const gateExam = new Date('2026-02-08');
+    
+    todayDateEl.textContent = today.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const timeDiff = gateExam.getTime() - today.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    daysLeftEl.textContent = `${daysLeft} days`;
+  }
+
+  function updateStudyStats() {
+    const hours = Math.floor(totalStudyMinutes / 60);
+    const minutes = totalStudyMinutes % 60;
+    totalStudyTimeEl.textContent = `${hours} hours ${minutes} minutes`;
+    sessionsCompletedEl.textContent = sessionsCompleted;
+  }
+
+  // Load saved data
+  function loadSavedData() {
+    const saved = localStorage.getItem('gateStudyTracker');
+    if (saved) {
+      const data = JSON.parse(saved);
+      totalStudyMinutes = data.totalStudyMinutes || 0;
+      sessionsCompleted = data.sessionsCompleted || 0;
+      updateStudyStats();
+    }
+  }
+
+  function saveData() {
+    const data = {
+      totalStudyMinutes,
+      sessionsCompleted
+    };
+    localStorage.setItem('gateStudyTracker', JSON.stringify(data));
+  }
+
+  // Initialize
+  updateDateInfo();
+  loadSavedData();
+  setInterval(updateDateInfo, 60000); // Update every minute
+
+  generateBtn.addEventListener("click", () => {
+    const file = imageInput.files[0];
+    partsCount = Math.min(50, Math.max(1, parseInt(partsInput.value)));
+
+    if (!file) return alert("Please upload an image first");
+
+    revealed = 0;
+    revealedParts = new Array(partsCount).fill(false);
+    updateProgress();
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      originalImg = new Image();
+      originalImg.onload = () => {
+        setupCanvas(originalImg, partsCount);
+      };
+      originalImg.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if (!originalImg) return;
+    revealed = 0;
+    revealedParts = new Array(partsCount).fill(false);
+    updateProgress();
+    setupCanvas(originalImg, partsCount);
+  });
+
+  resetAllBtn.addEventListener("click", () => {
+    if (confirm("⚠️ Are you sure you want to reset ALL your study statistics? This will delete all your progress data and cannot be undone!")) {
+      // Reset all stats
+      totalStudyMinutes = 0;
+      sessionsCompleted = 0;
+      
+      // Reset current image if loaded
+      if (originalImg) {
+        revealed = 0;
+        revealedParts = new Array(partsCount).fill(false);
+        setupCanvas(originalImg, partsCount);
+      }
+      
+      // Clear saved data
+      localStorage.removeItem('gateStudyTracker');
+      
+      updateProgress();
+      updateStudyStats();
+      
+      alert("✅ All statistics have been reset. Starting fresh for your GATE 2026 preparation!");
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+  if (!originalImg) return;
+
+  // Extra space ON TOP instead of bottom
+  const topSpace = 180;
+  finalCanvas.width = originalImg.width;
+  finalCanvas.height = originalImg.height + topSpace;
+  const ctx = finalCanvas.getContext("2d");
+
+  // White background for top stats
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, finalCanvas.width, topSpace);
+
+  // Stats
+  ctx.fillStyle = "#333";
+  ctx.font = "32px Poppins";
+
+  const today = new Date();
+  const gateExam = new Date("2026-02-08");
+  const daysLeft = Math.ceil((gateExam - today) / (1000 * 3600 * 24));
+  const hours = Math.floor(totalStudyMinutes / 60);
+  const minutes = totalStudyMinutes % 60;
+
+  ctx.fillText(`Date: ${today.toLocaleDateString()}`, 40, 50);
+  ctx.fillText(`Days Left: ${daysLeft}`, 40, 100);
+  ctx.fillText(`Study: ${hours}h ${minutes}m | Sessions: ${sessionsCompleted}`, 40, 150);
+
+  // Draw full-colour image below text
+  ctx.drawImage(originalImg, 0, topSpace, originalImg.width, originalImg.height);
+
+  // Divider lines for completed parts
+  const partWidth = originalImg.width / partsCount;
+  ctx.strokeStyle = "rgba(0,0,0,0.5)";
+  ctx.lineWidth = 2;
+
+  for (let i = 1; i < partsCount; i++) {
+    if (revealedParts[i - 1]) {
+      const x = i * partWidth;
+      ctx.beginPath();
+      ctx.moveTo(x, topSpace);
+      ctx.lineTo(x, topSpace + originalImg.height);
+      ctx.stroke();
+    }
+  }
+
+  // Download
+  const link = document.createElement("a");
+  link.download = "study-progress.png";
+  link.href = finalCanvas.toDataURL("image/png");
+  link.click();
+});
+
+  mainCanvas.addEventListener("click", (e) => {
+    if (!originalImg) return;
+
+    const rect = mainCanvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    
+    // Convert click position to part index
+    const partIndex = Math.floor((clickX / displayWidth) * partsCount);
+    
+    if (partIndex >= 0 && partIndex < partsCount && !revealedParts[partIndex]) {
+      revealedParts[partIndex] = true;
+      revealed++;
+      
+      // Add 25 minutes of study time
+      totalStudyMinutes += 25;
+      sessionsCompleted++;
+      
+      updateProgress();
+      updateStudyStats();
+      saveData();
+      drawCanvas();
+    }
+  });
+
+
+  function updateProgress() {
+    const percent = Math.round((revealed / partsCount) * 100);
+    progressEl.textContent = `Progress: ${percent}%`;
+  }
+
+  function setupCanvas(img, parts) {
+    // Calculate scale factor to fit within max width while maintaining aspect ratio
+    const maxDisplayWidth = 570; // Account for container padding
+    
+    // Only scale based on width to maintain aspect ratio
+    displayScale = Math.min(maxDisplayWidth / img.width, 1); // Don't scale up, only down
+    
+    displayWidth = Math.floor(img.width * displayScale);
+    displayHeight = Math.floor(img.height * displayScale);
+    
+    mainCanvas.width = displayWidth;
+    mainCanvas.height = displayHeight;
+    
+    drawCanvas();
+  }
+
+  function drawCanvas() {
+    if (!originalImg) return;
+    
+    const ctx = mainCanvas.getContext("2d");
+    const partWidth = displayWidth / partsCount;
+
+    for (let i = 0; i < partsCount; i++) {
+      const x = i * partWidth;
+      const w = (i === partsCount - 1) ? (displayWidth - x) : partWidth;
+      
+      // Calculate source coordinates
+      const srcX = (i * originalImg.width) / partsCount;
+      const srcW = (i === partsCount - 1) ? (originalImg.width - srcX) : (originalImg.width / partsCount);
+
+      if (revealedParts[i]) {
+        // Draw colored portion
+        ctx.drawImage(originalImg, srcX, 0, srcW, originalImg.height, x, 0, w, displayHeight);
+      } else {
+        // Draw grayscale portion
+        ctx.drawImage(originalImg, srcX, 0, srcW, originalImg.height, x, 0, w, displayHeight);
+        
+        const imgData = ctx.getImageData(x, 0, w, displayHeight);
+        const data = imgData.data;
+        
+        for (let p = 0; p < data.length; p += 4) {
+          const gray = data[p] * 0.3 + data[p + 1] * 0.59 + data[p + 2] * 0.11;
+          data[p] = data[p + 1] = data[p + 2] = gray;
+        }
+        
+        ctx.putImageData(imgData, x, 0);
+      }
+    }
+
+    // Draw subtle dividing lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1;
+    
+    for (let i = 1; i < partsCount; i++) {
+      const lineX = (i * displayWidth) / partsCount;
+      ctx.beginPath();
+      ctx.moveTo(lineX, 0);
+      ctx.lineTo(lineX, displayHeight);
+      ctx.stroke();
+    }
+  }
+
+})();
+</script>
+
+</body>
+</html>
