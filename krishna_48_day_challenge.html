@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>48-Day Krishna Discipline Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', system-ui, Arial, sans-serif;
+      margin: 0;
+      padding: 22px;
+      background: linear-gradient(135deg, #ffe8f0 0%, #e9ecff 40%, #e7fff4 100%);
+      color: #222;
+    }
+
+    /* Glass container */
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 24px;
+      padding: 22px 22px 26px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.14);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* Main Title */
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.7rem;
+      text-align: center;
+      background: linear-gradient(90deg, #7f52ff, #11a858);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 14px;
+    }
+
+    /* Top Row */
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+    }
+    .date-group,
+    .start-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Inputs */
+    input[type="date"] {
+      padding: 5px 8px;
+      border-radius: 8px;
+      border: 1px solid #cfd7ff;
+      font-size: 0.9rem;
+      background: white;
+      transition: box-shadow .2s ease;
+    }
+    input[type="date"]:focus {
+      box-shadow: 0 0 0 3px rgba(93,77,255,0.3);
+    }
+
+    /* Buttons */
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: linear-gradient(90deg, #6757ff, #36c26d);
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      white-space: nowrap;
+    }
+    button.secondary {
+      background: #e8e8ef;
+      color: #111827;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0px);
+    }
+
+    /* Progress Box */
+    .challenge-info {
+      background: rgba(231, 236, 255, 0.7);
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.8);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .day-label {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .progress-bar-wrap {
+      flex: 1;
+      min-width: 210px;
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e2e2e9;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #8fff79);
+      transition: width 0.25s ease-out;
+    }
+
+    /* Habit Cards */
+    .habits-container {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.7);
+      border-radius: 17px;
+      padding: 14px 14px 14px;
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #3b3b3b;
+      padding-bottom: 6px;
+    }
+
+    /* Checkboxes */
+    .habit-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px dashed #e5e7eb;
+      font-size: 0.9rem;
+    }
+    .habit-row:last-child {
+      border-bottom: none;
+    }
+    .habit-label {
+      flex: 1;
+      padding-right: 12px;
+    }
+    .habit-label span {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.72rem;
+      opacity: 0.65;
+    }
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    /* Notes */
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      border-radius: 14px;
+      border: 1px solid #d1d5db;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      font-size: 0.92rem;
+      transition: box-shadow .2s ease;
+    }
+    textarea:focus {
+      box-shadow: 0 0 0 3px rgba(50,150,255,0.25);
+    }
+
+    .save-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Krishna mantra */
+    .hk-mantra {
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 10px;
+      opacity: 0.85;
+      letter-spacing: 0.4px;
+      font-weight: 500;
+    }
+
+    /* Footer */
+    .footer-row {
+      font-size: 0.82rem;
+      opacity: 0.65;
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    /* Congrats overlay + card */
+    #congratsOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    #congratsCard {
+      background: radial-gradient(circle at top, #fff7f0, #f4f7ff 60%, #f2fff6);
+      padding: 18px 18px 16px;
+      border-radius: 20px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.28);
+      text-align: center;
+      width: 290px;
+      font-size: 0.9rem;
+      border: 2px solid #f3e6ff;
+      position: relative;
+    }
+    .peacock-feather {
+      position: absolute;
+      top: -10px;
+      left: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #0ea5e9, #22c55e 40%, #10b981 60%, #a855f7 90%);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.9);
+    }
+    .card-title-main {
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .card-date {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      opacity: 0.8;
+    }
+    .card-body-text {
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+    .card-footer-text {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      opacity: 0.9;
+      font-style: italic;
+    }
+    .small-mantra {
+      margin-top: 6px;
+      font-size: 0.78rem;
+    }
+    #congratsCard button {
+      margin-top: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .habits-container {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .top-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .challenge-info {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+
+  <!-- html2canvas for downloadable card -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <h1>48-Day Krishna Discipline Challenge</h1>
+    <div class="subtitle">Do it for Krishna, one day at a time.</div>
+
+    <div class="top-row">
+      <div class="date-group">
+        <strong>Date:</strong>
+        <input type="date" id="datePicker" />
+        <button class="secondary" id="todayBtn">Today</button>
+      </div>
+      <div class="start-group">
+        <span><strong>Challenge start:</strong></span>
+        <input type="date" id="startDateInput" />
+        <button id="setStartTodayBtn">Set challenge start as today</button>
+      </div>
+    </div>
+
+    <div class="challenge-info">
+      <div class="day-label" id="dayLabel">Day ? of 48</div>
+      <div class="progress-bar-wrap">
+        <div>
+          Overall progress: <span id="progressText">0 / 48 days strong</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="habits-container">
+      <div class="card">
+        <div class="card-title">Habits to Leave (Stop)</div>
+        <div id="stopHabits"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Habits to Build (Start)</div>
+        <div id="startHabits"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Daily Note / Offering to Krishna</div>
+      <textarea id="dailyNote" placeholder="Write how you felt today, where you struggled, and offer your effort to Krishna."></textarea>
+      <div class="hk-mantra">
+        Hare Krishna Hare Krishna Krishna Krishna Hare Hare<br />
+        Hare Rama Hare Rama Rama Rama Hare Hare
+      </div>
+      <div class="save-row">
+        <button id="saveBtn">Save today's progress</button>
+        <div style="font-size:0.8rem; opacity:0.8;" id="statusText"></div>
+      </div>
+    </div>
+
+    <div class="footer-row">
+      <div>Tip: A day is “strong” when all habits are kept for that date.</div>
+      <div>Everything is stored locally in your browser (no internet required).</div>
+    </div>
+  </div>
+
+  <!-- Congrats overlay + downloadable card -->
+  <div id="congratsOverlay">
+    <div id="congratsCard" data-day-num="" data-date="">
+      <div class="peacock-feather"></div>
+      <div class="card-title-main" id="congratsDayTitle">Day Completed!</div>
+      <div class="card-date" id="congratsDateText"></div>
+      <div class="card-body-text" id="congratsText">
+        <!-- Filled by JS -->
+      </div>
+      <div class="card-footer-text">
+        Your tapasya is an offering at Krishna's lotus feet.
+      </div>
+      <div class="small-mantra">
+        Hare Krishna Hare Krishna Krishna Krishna Hare Hare<br/>
+        Hare Rama Hare Rama Rama Rama Hare Hare
+      </div>
+      <button onclick="closeCongrats()">OK</button>
+    </div>
+  </div>
+
+  <script>
+    const HABITS = [
+      // Stop habits
+      { id: "no_social", group: "stop", name: "No Social Media", hint: "Avoid scrolling, shorts, etc." },
+      { id: "no_porn", group: "stop", name: "No Porn / Negative Content", hint: "Protect the mind and senses." },
+      { id: "no_unnecessary_talk", group: "stop", name: "No Unnecessary Conversations", hint: "Avoid gossip and time-pass talks." },
+      { id: "no_plan_change", group: "stop", name: "Did not change the plan", hint: "Stuck to the study plan with consistency." },
+
+      // Start habits
+      { id: "wake_4am", group: "start", name: "Woke up at 4:00 AM", hint: "Start the day early and focused." },
+      { id: "chant_hk", group: "start", name: "Hare Krishna Chanting", hint: "Chant sincerely with attention." },
+      { id: "class_target", group: "start", name: "Completed Class Target", hint: "Finished the planned classes/lectures." },
+      { id: "revision_target", group: "start", name: "Completed Revision Target", hint: "Revised what was planned." },
+      { id: "krishna_path", group: "start", name: "Stayed in Krishna's Path", hint: "Avoided actions pulling you away from Krishna." }
+    ];
+
+    const STORAGE_KEY_DATA = "krishna48_data";
+    const STORAGE_KEY_START = "krishna48_start_date";
+
+    const datePicker = document.getElementById("datePicker");
+    const startDateInput = document.getElementById("startDateInput");
+    const todayBtn = document.getElementById("todayBtn");
+    const setStartTodayBtn = document.getElementById("setStartTodayBtn");
+    const stopHabitsDiv = document.getElementById("stopHabits");
+    const startHabitsDiv = document.getElementById("startHabits");
+    const dailyNote = document.getElementById("dailyNote");
+    const saveBtn = document.getElementById("saveBtn");
+    const statusText = document.getElementById("statusText");
+    const dayLabel = document.getElementById("dayLabel");
+    const progressText = document.getElementById("progressText");
+    const progressFill = document.getElementById("progressFill");
+
+    const congratsOverlay = document.getElementById("congratsOverlay");
+    const congratsCard = document.getElementById("congratsCard");
+    const congratsDayTitle = document.getElementById("congratsDayTitle");
+    const congratsDateText = document.getElementById("congratsDateText");
+    const congratsText = document.getElementById("congratsText");
+
+    function toDateInputString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function fromDateInputString(str) {
+      if (!str) return null;
+      const [y, m, d] = str.split("-").map(Number);
+      if (!y || !m || !d) return null;
+      return new Date(y, m - 1, d);
+    }
+
+    function loadStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_DATA);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error("Error loading data", e);
+        return {};
+      }
+    }
+
+    function saveStorage(data) {
+      localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(data));
+    }
+
+    function loadStartDate() {
+      const s = localStorage.getItem(STORAGE_KEY_START);
+      return s || "";
+    }
+
+    function saveStartDate(str) {
+      if (str) {
+        localStorage.setItem(STORAGE_KEY_START, str);
+      }
+    }
+
+    function buildHabitRows() {
+      stopHabitsDiv.innerHTML = "";
+      startHabitsDiv.innerHTML = "";
+      HABITS.forEach(h => {
+        const row = document.createElement("div");
+        row.className = "habit-row";
+
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "habit-label";
+        labelDiv.innerHTML = `${h.name}<span>${h.hint}</span>`;
+
+        const toggleWrap = document.createElement("label");
+        toggleWrap.className = "toggle-wrap";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = h.id;
+        checkbox.dataset.habitId = h.id;
+
+        const text = document.createElement("span");
+        text.textContent = h.group === "stop" ? "Kept (avoided)" : "Done";
+
+        toggleWrap.appendChild(checkbox);
+        toggleWrap.appendChild(text);
+
+        row.appendChild(labelDiv);
+        row.appendChild(toggleWrap);
+
+        if (h.group === "stop") {
+          stopHabitsDiv.appendChild(row);
+        } else {
+          startHabitsDiv.appendChild(row);
+        }
+      });
+    }
+
+    function getCurrentDateKey() {
+      const val = datePicker.value;
+      return val || toDateInputString(new Date());
+    }
+
+    function renderForCurrentDate() {
+      const data = loadStorage();
+      const key = getCurrentDateKey();
+      const entry = data[key] || {};
+      HABITS.forEach(h => {
+        const cb = document.getElementById(h.id);
+        if (cb) cb.checked = !!entry[h.id];
+      });
+      dailyNote.value = entry.note || "";
+      updateDayLabelAndProgress();
+    }
+
+    function checkIfStrongDay() {
+      let allGood = true;
+      HABITS.forEach(h => {
+        const cb = document.getElementById(h.id);
+        if (!cb || !cb.checked) {
+          allGood = false;
+        }
+      });
+      return allGood;
+    }
+
+    function saveCurrentDay() {
+      const data = loadStorage();
+      const key = getCurrentDateKey();
+      const entry = {};
+      HABITS.forEach(h => {
+        const cb = document.getElementById(h.id);
+        entry[h.id] = !!(cb && cb.checked);
+      });
+      entry.note = dailyNote.value || "";
+      data[key] = entry;
+      saveStorage(data);
+      statusText.textContent = "Saved ✔";
+      setTimeout(() => { statusText.textContent = ""; }, 2000);
+      updateDayLabelAndProgress();
+
+      const startStr = startDateInput.value;
+      const startDate = fromDateInputString(startStr);
+      const today = fromDateInputString(key);
+      if (!startDate || !today) return;
+
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const diff = Math.floor((today - startDate) / msPerDay);
+      const dayNum = diff + 1;
+
+      if (dayNum >= 1 && dayNum <= 48 && checkIfStrongDay()) {
+        showCongratsCard(dayNum);
+      }
+    }
+
+    function updateDayLabelAndProgress() {
+      const startStr = startDateInput.value;
+      const startDate = fromDateInputString(startStr);
+      const current = fromDateInputString(getCurrentDateKey());
+      if (!startDate || !current) {
+        dayLabel.textContent = "Set a challenge start date to see day number.";
+      } else {
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const diff = Math.floor((current - startDate) / msPerDay);
+        const dayNum = diff + 1;
+        if (dayNum < 1) {
+          dayLabel.textContent = "Selected date is before challenge start.";
+        } else if (dayNum > 48) {
+          dayLabel.textContent = `Day ${dayNum} (after 48-day window).`;
+        } else {
+          dayLabel.textContent = `Day ${dayNum} of 48`;
+        }
+      }
+
+      if (!startDate) {
+        progressText.textContent = "0 / 48 days strong";
+        progressFill.style.width = "0%";
+        return;
+      }
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const data = loadStorage();
+      let strongDays = 0;
+      const totalChallengeDays = 48;
+      for (let i = 0; i < 48; i++) {
+        const d = new Date(startDate.getTime() + i * msPerDay);
+        const key = toDateInputString(d);
+        const entry = data[key];
+        if (!entry) continue;
+        let allGood = true;
+        for (const h of HABITS) {
+          if (!entry[h.id]) {
+            allGood = false;
+            break;
+          }
+        }
+        if (allGood) strongDays++;
+      }
+      progressText.textContent = `${strongDays} / 48 days strong`;
+      const percent = (strongDays / totalChallengeDays) * 100;
+      progressFill.style.width = `${percent}%`;
+    }
+
+    function initDates() {
+      const today = new Date();
+      datePicker.value = toDateInputString(today);
+
+      const storedStart = loadStartDate();
+      if (storedStart) {
+        startDateInput.value = storedStart;
+      }
+    }
+
+    function showCongratsCard(dayNum) {
+      const todayStr = getCurrentDateKey();
+      congratsDayTitle.textContent = `Day ${dayNum} Completed!`;
+      congratsDateText.textContent = `Date: ${todayStr}`;
+      congratsText.innerHTML = `
+        You stayed disciplined on Day ${dayNum}.<br/>
+        You protected your mind and used your time for Krishna.<br/>
+        <br/>
+        <strong>Keep going tomorrow. Krishna is watching your effort.</strong>
+      `;
+      congratsCard.dataset.dayNum = String(dayNum);
+      congratsCard.dataset.date = todayStr;
+      congratsOverlay.style.display = "flex";
+
+      setTimeout(() => {
+        downloadCardImage();
+      }, 600);
+    }
+
+    function closeCongrats() {
+      congratsOverlay.style.display = "none";
+    }
+
+    function downloadCardImage() {
+      const card = congratsCard;
+      const dayNum = card.dataset.dayNum || "";
+      const dateStr = card.dataset.date || "";
+      html2canvas(card).then(canvas => {
+        const link = document.createElement("a");
+        const safeDate = dateStr.replace(/[^0-9\-]/g, "_");
+        link.download = `Krishna_Challenge_Day_${dayNum}_${safeDate}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    // Event listeners
+    todayBtn.addEventListener("click", () => {
+      const today = new Date();
+      datePicker.value = toDateInputString(today);
+      renderForCurrentDate();
+    });
+
+    setStartTodayBtn.addEventListener("click", () => {
+      const todayStr = toDateInputString(new Date());
+      startDateInput.value = todayStr;
+      saveStartDate(todayStr);
+      updateDayLabelAndProgress();
+    });
+
+    startDateInput.addEventListener("change", () => {
+      saveStartDate(startDateInput.value);
+      updateDayLabelAndProgress();
+    });
+
+    datePicker.addEventListener("change", () => {
+      renderForCurrentDate();
+    });
+
+    saveBtn.addEventListener("click", () => {
+      saveCurrentDay();
+    });
+
+    congratsOverlay.addEventListener("click", (e) => {
+      if (e.target === congratsOverlay) {
+        closeCongrats();
+      }
+    });
+
+    // Init
+    buildHabitRows();
+    initDates();
+    renderForCurrentDate();
+  </script>
+</body>
+</html>
